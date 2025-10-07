@@ -3,7 +3,6 @@ from django.conf import settings
 from django.utils import timezone
 
 class FollowingFollower(models.Model):
-    # This is the through model for follower-following relationship
     follower = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='following_set',
@@ -30,7 +29,6 @@ class FollowingFollower(models.Model):
 
 
 class BlockList(models.Model):
-    # This is the through model for blocker-blocked relationship
     blocker = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='blocked_set',

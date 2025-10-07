@@ -68,7 +68,6 @@ class PostViewSet(ModelViewSet):
         return context
 
     def perform_create(self, serializer):
-        # Normal users automatically set themselves as the owner
         if not self.request.user.is_superuser:
             serializer.save(user_account=self.request.user)
         else:

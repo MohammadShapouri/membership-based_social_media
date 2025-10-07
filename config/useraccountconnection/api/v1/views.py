@@ -70,7 +70,6 @@ class FollowerFollowingViewSet(ModelViewSet):
                 & Q(following__is_active=True, following__is_account_verified=True)
             )
 
-        # If client filters by target user → check privacy
         follower_id = self.request.query_params.get("follower")
         following_id = self.request.query_params.get("following")
         target_user_id = follower_id or following_id
@@ -197,7 +196,6 @@ class UserFollowStatsAPIView(APIView):
         """
         user = get_object_or_404(UserAccount, pk=pk)
 
-        # Count followers and followings
         num_follower = FollowingFollower.objects.filter(
             following=user,
             follower__is_active=True,
@@ -234,7 +232,6 @@ class CurrentUserFollowingStatsAPIView(APIView):
     def get(self, request, pk):
         user = get_object_or_404(UserAccount, pk=pk)
 
-        # Count followers and followings
         qs = FollowingFollower.objects.filter(
             follower=request.user,
             following=user
@@ -272,7 +269,6 @@ class CurrentUserBlockStatsAPIView(APIView):
     def get(self, request, pk):
         user = get_object_or_404(UserAccount, pk=pk)
 
-        # Count followers and followings
         qs = BlockList.objects.filter(
             blocker=request.user,
             blocked=user

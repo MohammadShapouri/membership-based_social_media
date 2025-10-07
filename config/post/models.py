@@ -14,7 +14,6 @@ import mimetypes
 class Post(models.Model):
     user_account = models.ForeignKey('useraccount.UserAccount', on_delete=models.CASCADE, verbose_name="User")
     caption = models.TextField(max_length=1500, blank=True, null=True, verbose_name='Caption')
-    # is_published = models.BooleanField(default=True, verbose_name='Is Published?')
     plan = models.ForeignKey('plan.Plan', on_delete=models.PROTECT, blank=True, null=True, verbose_name="Plan")
     is_open_to_comment = models.BooleanField(default=True, verbose_name='Is Open to Write Comment?')
     likes = models.ManyToManyField("like.PostLike", related_name="liked_posts", verbose_name="Likes")

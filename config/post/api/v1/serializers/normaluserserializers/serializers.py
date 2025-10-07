@@ -76,7 +76,7 @@ class PostPostUpdateSerializer(serializers.ModelSerializer):
         validated_data.pop("files", None)
         validated_data.pop("user_account", None)
         post = Post.objects.create(user_account=self.user, **validated_data)
-        for file_obj in uploaded_files[:10]:  # limit max 10
+        for file_obj in uploaded_files[:10]: 
             PostFileContent.objects.create(post=post, file=file_obj)
         return post
 
@@ -93,7 +93,6 @@ class PostPostUpdateSerializer(serializers.ModelSerializer):
 
         if uploaded_files:
             existing_count = instance.files.count()
-            # fill up to 10 files max
             for file_obj in uploaded_files[: max(0, 10 - existing_count)]:
                 PostFileContent.objects.create(post=instance, file=file_obj)
         return instance

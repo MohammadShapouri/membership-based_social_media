@@ -13,11 +13,9 @@ class CanViewFollowingFollower(BasePermission):
     def has_object_permission(self, request, view, obj: FollowingFollower):
         user = request.user
 
-        # Superuser bypasses everything
         if user.is_superuser:
             return True
 
-        # Helper to check a single user
         def check_user_access(target_user: UserAccount):
             if target_user.is_private and target_user != user:
                 is_following = FollowingFollower.objects.filter(
@@ -48,7 +46,6 @@ class CanDeleteFollowingFollower(BasePermission):
     def has_object_permission(self, request, view, obj: FollowingFollower):
         user = request.user
 
-        # Superuser bypasses everything
         if user.is_superuser:
             return True
 
@@ -61,7 +58,6 @@ class CanEditFollowingFollower(BasePermission):
     def has_object_permission(self, request, view, obj: FollowingFollower):
         user = request.user
 
-        # Superuser bypasses everything
         if user.is_superuser:
             return True
 
@@ -77,5 +73,4 @@ class IsOwnerOfBlockListOrAdmin(BasePermission):
         return request.user.is_superuser or obj.blocker == request.user
 
     def has_permission(self, request, view):
-        # User must be authenticated
         return request.user and request.user.is_authenticated

@@ -3,7 +3,6 @@ from django.utils import timezone
 import uuid
 
 class Subscription(models.Model):
-    # Relations
     user_account = models.ForeignKey(
         "useraccount.UserAccount", 
         on_delete=models.SET_NULL,

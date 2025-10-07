@@ -60,10 +60,8 @@ class FollowerFollowingRetrivalUpdateSerializer(serializers.ModelSerializer):
         exclude = ['acception_date', 'creation_date']
 
     def validate(self, attrs):
-        # If updating an existing instance
         instance = getattr(self, 'instance', None)
 
-        # Get the new value (from request) or keep existing
         new_is_accepted = attrs.get("is_accepted")
         
         if instance:

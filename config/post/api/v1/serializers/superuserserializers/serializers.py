@@ -34,10 +34,10 @@ class PostPostUpdateSerializer(serializers.ModelSerializer):
         uploaded_files = request.FILES.getlist("files") if request else []
         # Creation: must have at least one file
 
-        # 🔒 Extract user_account from attrs
+        # Extract user_account from attrs
         user_account = attrs.get("user_account") or (self.instance.user_account if self.instance else None)
 
-        # 🔒 Check ownership of plan
+        # Check ownership of plan
         plan = attrs.get("plan") or (self.instance.plan if self.instance else None)
         if plan and user_account and plan.user_account != user_account:
             raise serializers.ValidationError({
@@ -65,7 +65,7 @@ class PostPostUpdateSerializer(serializers.ModelSerializer):
         uploaded_files = validated_data.pop("uploaded_files", [])
         validated_data.pop("files", None)
         post = Post.objects.create(**validated_data)
-        for file_obj in uploaded_files[:10]:  # limit max 10
+        for file_obj in uploaded_files[:10]:
             PostFileContent.objects.create(post=post, file=file_obj)
         return post
 
@@ -79,7 +79,6 @@ class PostPostUpdateSerializer(serializers.ModelSerializer):
 
         if uploaded_files:
             existing_count = instance.files.count()
-            # fill up to 10 files max
             for file_obj in uploaded_files[: max(0, 10 - existing_count)]:
                 PostFileContent.objects.create(post=instance, file=file_obj)
         return instance

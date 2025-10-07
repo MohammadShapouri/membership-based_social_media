@@ -92,7 +92,6 @@ class UserAccountViewSet(ModelViewSet):
             try:
                 context.update({'requested_user': self.get_object()})
             except (NoExistingUser, InactiveUser):
-                # Handle case where object doesn't exist or is inaccessible
                 pass
         return context
 
@@ -124,7 +123,6 @@ class UserAccountViewSet(ModelViewSet):
 
 
     def get_permissions(self):
-        # Check if this is a custom action that requires IsOwnerOrAdmin permission
         if hasattr(self, 'action') and self.action in ['verify_new_email_by_otp', 'request_new_email_verification_token']:
             self.permission_classes = [IsOwnerOrAdmin]
         elif hasattr(self, 'action') and self.action in ['change_password']:
@@ -161,7 +159,6 @@ class UserAccountViewSet(ModelViewSet):
             try:
                 user: UserAccount = serializer.save(is_active=False, is_account_verified=False)                
                 if settings.OTP_AS_VERIFICATION_METHOD:
-                    # Get OTP setting and create OTP
                     otp_setting = self._get_otp_setting('timer_counter_based')
                     if otp_setting:
                         otp_code, otp_object = OTPCode.objects.create_otp(otp_setting, 'activate_account')
@@ -169,10 +166,8 @@ class UserAccountViewSet(ModelViewSet):
                         user.save()
                         
                         print("*********", otp_code)
-                        # Send OTP email asynchronously
                         send_otp_email.delay(otp_code)
                     else:
-                        # Handle case where OTP setting doesn't exist
                         user.delete()
                         raise Exception("OTP configuration not found")
                 else:
@@ -180,12 +175,10 @@ class UserAccountViewSet(ModelViewSet):
                     token = default_token_generator.make_token(user)
                     uid = urlsafe_base64_encode(force_bytes(user.pk))
                     verification_link = settings.FRONTEND_DOMAIN + f"/verify-account?uid={uid}&token={token}"
-                    # Send OTP email asynchronously
                     print(verification_link)
                     send_link_email.delay(verification_link)
 
             except Exception as e:
-                # Log error and provide user-friendly message
                 raise Exception(f"Failed to create account: {str(e)}")
 
 
@@ -225,17 +218,14 @@ class UserAccountViewSet(ModelViewSet):
                         user.save()
 
                         print("************", otp_code)
-                        # Send OTP email asynchronously to the new email address
                         send_otp_email.delay(otp_code)
                         # Don't save the serializer yet - we'll save other fields separately
                     else:
-                        # Handle case where OTP setting doesn't exist
                         raise Exception("OTP configuration not found")   
                 else:
                     token = default_token_generator.make_token(user)
                     uid = urlsafe_base64_encode(force_bytes(user.pk))
                     verification_link = settings.FRONTEND_DOMAIN + f"/verify-email?uid={uid}&token={token}"
-                    # Send OTP email asynchronously
                     print(verification_link)
                     send_link_email.delay(verification_link)
             else:
@@ -246,17 +236,13 @@ class UserAccountViewSet(ModelViewSet):
         """Handle user account deletion with validation."""
         serializer = self.get_serializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
-        # The serializer validation ensures the request data is valid
-        # Now proceed with deletion
         return super().perform_destroy(instance)
 
 
     def verify_new_email_by_otp(self, request, *args, **kwargs):
         """Verify and activate the new email address after OTP verification."""
-        # Get the user object first
         user = self.get_object()
         
-        # Check object permissions (this will enforce IsOwnerOrAdmin)
         self.check_object_permissions(request, user)
         
         # Check if user has a pending new email verification
@@ -291,7 +277,6 @@ class UserAccountViewSet(ModelViewSet):
                 'new_email': user.email
             }, status=status.HTTP_200_OK)
         else:
-            # Handle OTP errors
             if error_title == 'wrong_opt_code':
                 return Response({'error': 'OTP is incorrect'}, status=status.HTTP_400_BAD_REQUEST)
             elif error_title == 'max_attempt_exceeded':
@@ -304,10 +289,8 @@ class UserAccountViewSet(ModelViewSet):
 
     def request_new_email_verification_token(self, request, *args, **kwargs):
         """Request new email verification Token for pending email change."""
-        # Get the user object first
         user: UserAccount = self.get_object()
 
-        # Check object permissions (this will enforce IsOwnerOrAdmin)
         self.check_object_permissions(request, user)
         
         # Check if user has a pending new email verification
@@ -322,14 +305,12 @@ class UserAccountViewSet(ModelViewSet):
                     # Delete existing OTP if any
                     if user.otp_object:
                         user.otp_object.delete()
-                    
-                    # Create new OTP
+
                     otp_code, otp_object = OTPCode.objects.create_otp(otp_setting, 'update_account')
                     user.otp_object = otp_object
                     user.save()
 
                     print("************", otp_code)
-                    # Send OTP email asynchronously to the new email address
                     send_otp_email.delay(otp_code)
                     return Response({
                         'success': 'Email verification OTP sent successfully',
@@ -342,7 +323,6 @@ class UserAccountViewSet(ModelViewSet):
                 token = default_token_generator.make_token(user)
                 uid = urlsafe_base64_encode(force_bytes(user.pk))
                 verification_link = settings.FRONTEND_DOMAIN + f"/verify-email?uid={uid}&token={token}"
-                # Send OTP email asynchronously
                 print("****************", verification_link)
                 send_link_email.delay(verification_link)
                 return Response({
@@ -359,7 +339,7 @@ class UserAccountViewSet(ModelViewSet):
         # Get the user object first
         user = self.get_object()
         
-        # Check object permissions (this will enforce IsOwnerOrAdmin)
+
         self.check_object_permissions(request, user)
         
         # Check if user is active and verified
@@ -414,7 +394,6 @@ class RequestResetPasswordTokenView(GenericAPIView):
                 token = default_token_generator.make_token(user)
                 uid = urlsafe_base64_encode(force_bytes(user.pk))
                 verification_link = settings.FRONTEND_DOMAIN + f"/reset-password?uid={uid}&token={token}"
-                # Send OTP email asynchronously
                 print("************", verification_link)
                 send_link_email.delay(verification_link)
         return Response({'detail': "Reset password token will be sent to your email."}, status.HTTP_200_OK)

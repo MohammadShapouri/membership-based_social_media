@@ -5,7 +5,6 @@ class CanAccessSettings(BasePermission):
     def has_object_permission(self, request, view, obj: UserAccountSettings):
         user = request.user
 
-        # Superuser bypasses everything
         if user.is_superuser:
             return True
 
